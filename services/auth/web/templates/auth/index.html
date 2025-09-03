@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Email → OTP → JWT Demo</title>
+    <style>
+        body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;max-width:700px;margin:40px auto;padding:0 16px;}
+        .card{border:1px solid #e5e7eb;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+        label{display:block;margin-top:12px}
+        input{padding:10px;border:1px solid #d1d5db;border-radius:10px;width:100%;}
+        button{margin-top:14px;padding:10px 14px;border:0;border-radius:10px;background:#111827;color:#fff;cursor:pointer}
+        code{background:#f3f4f6;padding:4px 6px;border-radius:6px}
+        .small{color:#6b7280;font-size:12px}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Request API access</h2>
+
+        <form method="POST" action="/register">
+            <label>Email</label>
+            <input type="email" name="email" required placeholder="you@example.com" />
+            <button type="submit">Send code</button>
+        </form>
+
+        <p class="small">We'll email you a short-lived code. If email isn't configured on the server, the code will be shown here.</p>
+    </div>
+
+    {{if .ShowVerify}}
+        {{if .RevealCode}}<p>OTP: {{.RevealCode}}</p>{{end}}
+
+        <div class="card" style="margin-top:16px">
+            <h3>Enter the code</h3>
+            <form method="POST" action="/verify">
+                <input type="hidden" name="email" value="{{.Email}}" />
+                <label>Code</label>
+                <input type="text" name="code" pattern="[0-9]{6}" maxlength="6" required placeholder="123456" />
+                <button type="submit">Get JWT</button>
+            </form>
+
+            {{if .Emailed}}<p class="small">Code was emailed to <b>{{.Email}}</b>. Check your inbox.</p>{{end}}
+        </div>
+    {{end}}
+
+    {{if .APIKey}}<p>Your API Key: {{.APIKey}}</p>{{end}}
+</body>
+</html>

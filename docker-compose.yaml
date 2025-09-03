@@ -1,0 +1,149 @@
+services:
+
+  crypto_rates_redis:
+    image: redis:alpine
+    container_name: crypto_rates_redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+    logging:
+      driver: "none"
+    networks:
+      - crypto_rates_redis_network
+
+  crypto_rates_collector_worker:
+    build:
+      context: ./services/collector
+      dockerfile: Dockerfile
+      target: crypto_rates_ticks_worker_image  
+    image: crypto_rates_ticks_worker:latest
+    container_name: crypto_rates_ticks_worker 
+    depends_on:
+      - crypto_rates_redis 
+    networks:
+      - crypto_rates_redis_network
+
+  crypto_rates_collector_aggregator:
+    build:
+      context: ./services/collector
+      dockerfile: Dockerfile
+      target: crypto_rates_ticks_aggregator_image  
+    image: crypto_rates_ticks_aggregator:latest
+    container_name: crypto_rates_ticks_aggregator 
+    depends_on:
+      - crypto_rates_redis 
+    networks:
+      - crypto_rates_redis_network
+
+  crypto_rates_mongo:
+    image: mongo:latest
+    container_name: crypto_rates_mongo
+    healthcheck:
+      test: [
+        "CMD", "mongosh", 
+        "--username", "usr", 
+        "--password", "pwd", 
+        "--authenticationDatabase=authDB", 
+        "--eval", "db.adminCommand('ping')",]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+    logging:
+      driver: "none"
+    networks:
+      - crypto_rates_mongo_network
+    volumes:
+      - crypto_rates_mongo_data:/data/db
+      - ./init/mongo/:/docker-entrypoint-initdb.d/
+
+  crypto_rates_auth:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+      target: crypto_rates_auth_image
+    image: crypto_rates_auth:latest
+    container_name: crypto_rates_auth 
+    depends_on:
+      - crypto_rates_mongo 
+    networks:
+      - crypto_rates_mongo_network
+      - crypto_rates_nginx_network
+
+  crypto_rates_mysql:
+    image: mysql:8.0
+    container_name: crypto_rates_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: crypto_rates
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: "none"
+    networks:
+      - crypto_rates_mysql_network
+    volumes:
+      - crypto_rates_mysql_data:/var/lib/mysql
+      - ./init/mysql:/docker-entrypoint-initdb.d
+
+  crypto_rates_rest_api:
+    build:
+      context: ./services/rest_api
+      dockerfile: Dockerfile
+      target: crypto_rates_rest_api_image
+    image: crypto_rates_rest_api:latest
+    container_name: crypto_rates_rest_api
+    networks:
+      - crypto_rates_mysql_network
+      - crypto_rates_redis_network
+      - crypto_rates_nginx_network
+    volumes:
+      - ./services/rest_api:/var/www/html
+      - crypto_rates_rest_api_vendor_data:/var/www/html/vendor
+      - crypto_rates_rest_api_var_data:/var/www/html/var
+    depends_on:
+      - crypto_rates_mysql
+      - crypto_rates_redis
+      - crypto_rates_auth
+
+  nginx:
+    image: nginx:latest
+    container_name: crypto_rates_nginx
+    logging:
+      driver: "none"
+    networks:
+      - crypto_rates_nginx_network
+    ports:
+      - "${AUTH_APP_PORT}:80"
+      - "${REST_API_APP_PORT}:81"
+    volumes:
+      - ./init/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./services/rest_api:/var/www/html
+    depends_on:
+      - crypto_rates_auth
+      - crypto_rates_rest_api
+
+networks:
+  crypto_rates_redis_network:
+    driver: bridge
+  crypto_rates_mongo_network:
+    driver: bridge
+  crypto_rates_mysql_network:
+    driver: bridge
+  crypto_rates_nginx_network:
+    driver: bridge
+
+volumes:
+  crypto_rates_mongo_data:
+  crypto_rates_mysql_data:
+  crypto_rates_rest_api_vendor_data:
+  crypto_rates_rest_api_var_data:

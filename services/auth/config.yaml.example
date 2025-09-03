@@ -1,0 +1,12 @@
+MONGO:
+  ADDR: crypto_rates_mongo:27017
+  # ADDR: localhost:27017
+  USER: usr 
+  PASS: pwd 
+SMTP:
+  host: smtp.gmail.com
+  port: 587 
+  user: 
+  pass: 
+  from_email: support@crypto_rates.com 
+JWT_SECRET: c0c6a3d95b771d3390b3576797a5af4bcdfbe853a86b1f2bba60bf2586874ad2 

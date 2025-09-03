@@ -1,0 +1,47 @@
+# 🔧 General
+*.bak
+cookies.txt
+.env
+config.yaml
+mtests/
+
+# 🐘 Symfony (PHP)
+vendor/
+.env
+.env.local
+.env.*.local
+var/
+node_modules/
+public/build/
+public/bundles/
+config/jwt/*.pem
+symfony.lock
+
+# 🧠 Composer
+composer.lock
+composer.phar
+
+# 🐹 Golang
+*.exe
+*.test
+*.out
+*.log
+*.prof
+*.tmp
+*.cache
+*.bin
+*.a
+*.o
+*.so
+*.cgo*
+*.swp
+*.swo
+coverage.*
+__debug_bin
+.DS_Store
+
+# 🧪 Test artifacts
+*.coverage
+*.lcov
+*.log
+*.tmp
