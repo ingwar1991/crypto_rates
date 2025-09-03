@@ -1,0 +1,20 @@
+monolog:
+    channels: [app]
+    handlers:
+        # Log to file
+        main:
+            type: stream
+            path: '%kernel.logs_dir%/%kernel.environment%.log'
+            level: debug
+        console:
+            type: console
+            process_psr_3_messages: false
+            # config/packages/prod/monolog.yaml
+
+        # Log to stdout for Docker
+        stdout:
+            type: stream
+            path: "php://stdout"
+            level: info  # Adjust the level as needed
+            channels: ["app"]  # Log for specific channel (optional)
+

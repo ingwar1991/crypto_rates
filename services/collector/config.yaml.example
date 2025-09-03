@@ -1,0 +1,8 @@
+BINANCE_WS: wss://stream.binance.com:9443
+SYMBOLS: [BTCEUR,ETHEUR,LTCEUR]
+REDIS:
+  ADDR: crypto_rates_redis:6379
+  PASSWORD: ""
+  DB: 0
+TICK_TTL_SECONDS: 10 
+CANDLE_TTL_SECONDS: 300 # 5m 

@@ -1,0 +1,8 @@
+framework:
+    scheduler:
+        enabled: true
+        # jobs:
+        #     rates_collect:
+        #         type: command
+        #         command: 'rates:collect'
+        #         frequency: '*/5 * * * *'   # every 5 minutes aligned
